@@ -78,6 +78,9 @@ const Logo = styled.div`
   align-items: center;
   font-size: 2rem;
   font-weight: bold;
+  @media (max-width: 800px) {
+    font-size: 1.5rem;
+  }
 `;
 const Button = styled.button`
   cursor: pointer;

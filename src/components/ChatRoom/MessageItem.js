@@ -45,8 +45,10 @@ const MessageItem = ({
       <MyBalloon>
         <TopWrapper>
           <UserWrapper>
-            <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
-            <Writer>{writer}</Writer>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
+              <Writer>{writer}</Writer>
+            </div>
             <Date>{date}</Date>
           </UserWrapper>
           {updateMode ? (
@@ -93,8 +95,10 @@ const MessageItem = ({
   return (
     <Balloon>
       <UserWrapper>
-        <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
-        <Writer>{writer}</Writer>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
+          <Writer>{writer}</Writer>
+        </div>
         <Date>{date}</Date>
       </UserWrapper>
       <Content>{content}</Content>
@@ -125,7 +129,6 @@ border-radius: 10px;
 }
   margin: 5vh 5vw;
   width: 80%;
-  height: 120px;
 :after {
 content: '';
 position: absolute;
@@ -142,14 +145,12 @@ margin-right: -20px;
 }
  @media (max-width: 800px) {
     width: 80%;
-    height: 160px;
   }
 `;
 const Balloon = styled.div`
   position: relative;
   margin: 5vh 5vw;
   width: 80%;
-  height: 120px;
   background: #f3efe6;
   border-radius: 10px;
   :after {
@@ -168,7 +169,6 @@ const Balloon = styled.div`
   }
   @media (max-width: 800px) {
     width: 80%;
-    height: 160px;
   }
 `;
 const TopWrapper = styled.div`
@@ -226,7 +226,8 @@ const Input = styled.input`
 `;
 const EmojiWrapper = styled.div`
   display: flex;
-  margin: 1vh 1vw 0 auto;
+  margin: 1vh 1vw 1vh auto;
   width: 130px;
+  padding-bottom: 2vh;
 `;
 export default MessageItem;

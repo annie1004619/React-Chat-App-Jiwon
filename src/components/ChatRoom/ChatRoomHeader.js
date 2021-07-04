@@ -6,13 +6,22 @@ import { MdAssignment, MdExitToApp } from "react-icons/md";
 import MangeModal from "./MangeModal";
 
 const ChatRoomHeader = ({ handleAccept, handleReject }) => {
+  const participants = useSelector((state) => state.chat.participants);
+  const host = useSelector((state) => state.chat.currentChatRoom?.hostNickName);
+  const user = useSelector((state) => state.user.userProfile);
+  const currentChatRoom = useSelector((state) => state.chat.currentChatRoom);
+
   const [admin, setAdmin] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [acceptNumber, setAcceptNumber] = useState("");
+  const [waiting, setWaiting] = useState([]);
+  const [accept, setAccept] = useState([]);
 
-  const user = useSelector((state) => state.user.userProfile);
-  const currentChatRoom = useSelector((state) => state.chat.currentChatRoom);
-  const participants = useSelector((state) => state.chat.participants);
+  useEffect(() => {
+    if (!participants) return;
+    setWaiting(participants.filter((item) => item.type === "waiting"));
+    setAccept(participants.filter((item) => item.type === "accept"));
+  }, [participants]);
 
   useEffect(() => {
     if (!currentChatRoom) return;
@@ -44,12 +53,17 @@ const ChatRoomHeader = ({ handleAccept, handleReject }) => {
         <MdGroup size={30} color="#838383" style={{ marginRight: "1vw" }} />
         <div>{acceptNumber + 1}명</div>
         {admin ? (
-          <MdAssignment
-            size={30}
-            color="#838383"
-            style={{ marginLeft: "1vw", cursor: "pointer" }}
-            onClick={toggleModal}
-          />
+          <MenuIconWrapper>
+            <MdAssignment
+              size={30}
+              color="#838383"
+              style={{ marginLeft: "1vw", cursor: "pointer" }}
+              onClick={toggleModal}
+            />
+            {waiting.length !== 0 && (
+              <WaitingNumber>{waiting.length}</WaitingNumber>
+            )}
+          </MenuIconWrapper>
         ) : (
           <MdExitToApp
             size={30}
@@ -57,11 +71,14 @@ const ChatRoomHeader = ({ handleAccept, handleReject }) => {
             style={{ marginLeft: "1vw", cursor: "pointer" }}
           />
         )}
-        {openModal && (
+        {openModal && host && (
           <MangeModal
             toggleModal={toggleModal}
             handleAccept={handleAccept}
             handleReject={handleReject}
+            host={host}
+            waiting={waiting}
+            accept={accept}
           />
         )}
       </ParticipantsWrapper>
@@ -86,4 +103,23 @@ const Title = styled.div`
   font-weight: bold;
   font-size: 1.3rem;
 `;
+
+const MenuIconWrapper = styled.div`
+  position: relative;
+`;
+const WaitingNumber = styled.div`
+  position: absolute;
+  top: -10px;
+  right: -5px;
+  background: #e34f33;
+  width: 20px;
+  text-align: center;
+  border-radius: 50%;
+  height: 20px;
+  line-height: 20px;
+  font-size: 0.8rem;
+  color: white;
+  font-weight: bold;
+`;
+
 export default ChatRoomHeader;

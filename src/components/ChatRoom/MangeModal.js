@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { MdClose, MdPlayArrow } from "react-icons/md";
-import { useSelector } from "react-redux";
 
-const MangeModal = ({ toggleModal, handleAccept, handleReject }) => {
-  const participants = useSelector((state) => state.chat.participants);
-  const host = useSelector((state) => state.chat.currentChatRoom.hostNickName);
-  const [waiting, setWaiting] = useState([]);
-  const [accept, setAccept] = useState([]);
-
-  useEffect(() => {
-    if (!participants) return;
-    setWaiting(participants.filter((item) => item.type === "waiting"));
-    setAccept(participants.filter((item) => item.type === "accept"));
-  }, [participants]);
-
+const MangeModal = ({
+  toggleModal,
+  handleAccept,
+  handleReject,
+  host,
+  waiting,
+  accept,
+}) => {
   return (
     <Dimmer>
       <Container>
-        <MdClose
-          size={25}
-          color="black"
-          style={{ margin: "1.5vh 0 1.5vh auto", cursor: "pointer" }}
-          onClick={toggleModal}
-        />
+        <div
+          style={{
+            margin: "1.5vh 0 1.5vh auto",
+            cursor: "pointer",
+            height: "25px",
+          }}
+        >
+          <MdClose size={25} color="black" onClick={toggleModal} />
+        </div>
         <Title>참가자 관리하기</Title>
         <SubTitle>대기자 목록</SubTitle>
         {waiting.length === 0 && <Message>대기자가 없습니다.</Message>}
@@ -52,7 +50,11 @@ const MangeModal = ({ toggleModal, handleAccept, handleReject }) => {
           <ListItem key={index}>
             <MdPlayArrow size={25} style={{ marginRight: "2vw" }} />
             <NickName>{list.nickName}</NickName>
-            <Button color="#e34f33" onClick={() => handleReject(list, "강퇴")}>
+            <Button
+              color="#e34f33"
+              text="white"
+              onClick={() => handleReject(list, "강퇴")}
+            >
               강퇴
             </Button>
           </ListItem>
@@ -76,8 +78,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 40vw;
-  height: 50vh;
-  margin: 30vh auto;
+  height: 60vh;
+  margin: 25vh auto;
   background-color: white;
   z-index: 99;
   box-shadow: 0px 1px 1px rgba(15, 15, 15, 0.2);
@@ -110,6 +112,7 @@ const Button = styled.button`
   border-radius: 50px;
   margin-left: 10px;
   width: 60px;
+  color: ${(props) => props.text || "black"};
 `;
 const Host = styled.div`
   height: 30px;

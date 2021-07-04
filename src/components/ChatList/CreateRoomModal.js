@@ -14,6 +14,14 @@ const CreateRoomModal = ({ toggleModal }) => {
   const [description, onChangeDescription] = useInput("");
 
   const createRoom = () => {
+    if (!title) {
+      alert("채팅 방 이름을 입력해주세요.");
+      return;
+    }
+    if (!description) {
+      alert("채팅 방 설명을 입력해주세요.");
+      return;
+    }
     const roomId = v4();
     db.collection("chatRooms")
       .doc(roomId)
@@ -30,7 +38,7 @@ const CreateRoomModal = ({ toggleModal }) => {
         toggleModal();
       })
       .catch((error) => {
-        console.error("Error writing document: ", error);
+        alert(error);
       });
   };
   return (
@@ -84,6 +92,9 @@ const Container = styled.div`
   box-shadow: 0px 1px 1px rgba(15, 15, 15, 0.2);
   padding: 0 20px;
   border-radius: 5px;
+  @media (max-width: 400px) {
+    width: 70%;
+  }
 `;
 const Title = styled.div`
   font-weight: bold;

@@ -5,6 +5,8 @@ import { db, firebaseApp, firebase } from "../firebase";
 import { Link } from "react-router-dom";
 import { setUserProfile } from "../reducers/user";
 import { useDispatch } from "react-redux";
+import { RiChatSmile3Line } from "react-icons/ri";
+import { validateEmail, validatePW } from "../util/formCheck";
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -12,7 +14,6 @@ const SignUp = () => {
   const [signupPayload, setSignupPayload] = useState({
     email: "",
     pw: "",
-    pwConfirm: "",
     nickName: "",
     loading: false,
     message: "",
@@ -30,6 +31,39 @@ const SignUp = () => {
   const onSubmit = () => {
     setSignupPayload({ ...signupPayload, loading: true });
     setSignupPayload({ ...signupPayload, message: "" });
+    if (!signupPayload.email) {
+      setSignupPayload({ ...signupPayload, message: "이메일을 입력해주세요." });
+      return;
+    }
+    if (!validateEmail(signupPayload.email).result) {
+      const message = validateEmail(signupPayload.email).message;
+      setSignupPayload({ ...signupPayload, message: message });
+      return;
+    }
+    if (!signupPayload.nickName) {
+      setSignupPayload({ ...signupPayload, message: "닉네임을 입력해주세요." });
+      return;
+    }
+    if (!signupPayload.pw) {
+      setSignupPayload({
+        ...signupPayload,
+        message: "비밀번호를 입력해주세요.",
+      });
+      return;
+    }
+    if (!validatePW(signupPayload.pw).result) {
+      const message = validatePW(signupPayload.pw).message;
+      setSignupPayload({ ...signupPayload, message: message });
+      return;
+    }
+    console.log(!validateEmail(signupPayload.pw).result);
+    if (!isAgreeInfo) {
+      setSignupPayload({
+        ...signupPayload,
+        message: "개인 정보 수집에 동의해주세요.",
+      });
+      return;
+    }
 
     firebaseApp
       .auth()
@@ -44,6 +78,7 @@ const SignUp = () => {
             email: signupPayload.email,
             created: firebase.firestore.Timestamp.now().seconds,
             signupPath: signupPayload.signupPath,
+            join: [],
           };
 
           db.collection("users")
@@ -51,7 +86,13 @@ const SignUp = () => {
             .set(payload)
             .then(() => {
               console.log("Document successfully written!");
-              dispatch(setUserProfile(payload));
+              dispatch(
+                setUserProfile({
+                  uid: payload.uid,
+                  nickName: payload.nickName,
+                  email: payload.email,
+                })
+              );
               alert("회원가입이 완료되었습니다.");
               history.push("/chat/list");
             })
@@ -77,35 +118,32 @@ const SignUp = () => {
 
   return (
     <Container>
+      <Logo>
+        <div>WebTalk</div>
+        <RiChatSmile3Line />
+      </Logo>
       <Title>회원가입</Title>
-      <div>이메일</div>
+      <Label>이메일</Label>
       <Input
         type="email"
         onChange={(e) => onChange(e, "email")}
         value={signupPayload.email}
         placeholder="이메일을 입력하세요."
       />
-      <div>닉네임</div>
+      <Label>닉네임</Label>
       <Input
         onChange={(e) => onChange(e, "nickName")}
         value={signupPayload.nickName}
         placeholder="닉네임을 입력하세요."
       />
-      <div>비밀번호</div>
+      <Label>비밀번호</Label>
       <Input
         type="password"
         onChange={(e) => onChange(e, "pw")}
         value={signupPayload.pw}
         placeholder="비밀번호를 입력하세요."
       />
-      <div>비밀번호 확인</div>
-      <Input
-        type="password"
-        onChange={(e) => onChange(e, "pwConfirm")}
-        value={signupPayload.pwConfirm}
-        placeholder="비밀번호 확인을 입력하세요."
-      />
-      <div>가입 경로</div>
+      <Label>가입 경로</Label>
       <Select
         value={signupPayload.signupPath}
         onChange={(e) => onChange(e, "signupPath")}
@@ -127,7 +165,7 @@ const SignUp = () => {
         가입하기
       </Button>
       <Error>{signupPayload.message}</Error>
-      <Link to="/users/login">이미 회원이신가요?</Link>
+      <StyledLink to="/users/login">이미 회원이신가요?</StyledLink>
     </Container>
   );
 };
@@ -137,24 +175,62 @@ const Container = styled.div`
   flex-direction: column;
   width: 30%;
   padding: 10vh 10vw;
-  margin: 10vh auto;
+  margin: 20px auto;
   justify-content: center;
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
   background: #f7f6ee;
   border-radius: 50px;
+  @media (max-width: 400px) {
+    width: 70%;
+  }
+`;
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  justify-content: center;
+  margin-bottom: 5vh;
+  color: #0f530d;
 `;
 const Title = styled.div`
   font-weight: bold;
   margin-bottom: 20px;
   font-size: 1.5rem;
 `;
+const Label = styled.div`
+  font-size: 1rem;
+  font-weight: bold;
+  color: #838383;
+`;
 const Input = styled.input`
-  height: 30px;
-  margin: 10px 0 20px 0;
+  height: 35px;
+  margin: 10px 0;
   border: 1px solid #c4c4c4;
 `;
+
+const Button = styled.button`
+  height: 40px;
+  background-color: #a0bbaa;
+  border: none;
+  cursor: pointer;
+  margin-top: 2vh;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  opacity: 0.8;
+  :hover {
+    opacity: 1;
+  }
+`;
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  font-size: 1rem;
+  color: black;
+  font-weight: bold;
+`;
 const Select = styled.select`
-  height: 35px;
+  height: 40px;
   margin: 10px 0;
   border: 1px solid #c4c4c4;
 `;
@@ -162,14 +238,6 @@ const Select = styled.select`
 const CheckBoxContainer = styled.div`
   display: flex;
   align-items: center;
-  margin: 10px 0;
-`;
-
-const Button = styled.button`
-  height: 40px;
-  background-color: #85c7b5;
-  border: none;
-  cursor: pointer;
   margin: 10px 0;
 `;
 

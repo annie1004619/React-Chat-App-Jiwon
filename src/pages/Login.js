@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { firebaseApp, db } from "../firebase";
 import { useSelector, useDispatch } from "react-redux";
 import { setUserProfile } from "../reducers/user";
+import { RiChatSmile3Line } from "react-icons/ri";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,14 @@ const Login = () => {
           history.push("/chat/list");
           const userRef = db.collection("users").doc(uid);
           userRef.get().then((snapShot) => {
-            dispatch(setUserProfile(snapShot.data()));
+            const userInfo = snapShot.data();
+            dispatch(
+              setUserProfile({
+                uid: userInfo.uid,
+                nickName: userInfo.nickName,
+                email: userInfo.email,
+              })
+            );
           });
         } else {
           alert("해당하는 유저가 없습니다.");
@@ -49,20 +57,26 @@ const Login = () => {
   useEffect(() => {
     if (userProfile) {
       history.push("/chat/list");
+    } else {
+      history.push("/users/login");
     }
   }, []);
 
   return (
     <Container>
+      <Logo>
+        <div>WebTalk</div>
+        <RiChatSmile3Line />
+      </Logo>
       <Title>로그인</Title>
-      <div>이메일</div>
+      <Label>이메일</Label>
       <Input
         type="email"
         onChange={(e) => onChange(e, "email")}
         value={loginPayload.email}
         placeholder="이메일을 입력하세요."
       />
-      <div>비밀번호</div>
+      <Label>비밀번호</Label>
       <Input
         type="password"
         onChange={(e) => onChange(e, "pw")}
@@ -73,7 +87,7 @@ const Login = () => {
         로그인
       </Button>
       <Error>{loginPayload.message}</Error>
-      <Link to="/users/signup">회원이 아니신가요?</Link>
+      <StyledLink to="/users/signup">회원이 아니신가요?</StyledLink>
     </Container>
   );
 };
@@ -81,30 +95,61 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 30%;
-  padding: 0 50px;
-  margin: 10% auto;
+  padding: 2vh 7vw;
+  margin: 100px auto;
   height: 500px;
   justify-content: center;
   background: #f7f6ee;
   border-radius: 50px;
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
+  @media (max-width: 400px) {
+    width: 70%;
+  }
+`;
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  justify-content: center;
+  margin-bottom: 5vh;
+  color: #0f530d;
 `;
 const Title = styled.div`
   font-weight: bold;
   margin-bottom: 20px;
   font-size: 1.5rem;
 `;
+const Label = styled.div`
+  font-size: 1rem;
+  font-weight: bold;
+  color: #838383;
+`;
 const Input = styled.input`
-  height: 30px;
+  height: 35px;
   margin: 10px 0;
   border: 1px solid #c4c4c4;
 `;
 
 const Button = styled.button`
   height: 40px;
-  background-color: #85c7b5;
+  background-color: #a0bbaa;
   border: none;
   cursor: pointer;
+  margin-top: 2vh;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  opacity: 0.8;
+  :hover {
+    opacity: 1;
+  }
+`;
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  font-size: 1rem;
+  color: black;
+  font-weight: bold;
 `;
 const Error = styled.div`
   margin: 10px 0;

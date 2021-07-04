@@ -29,7 +29,8 @@ const CreateRoomModal = ({ toggleModal }) => {
         title: title,
         description: description,
         id: roomId,
-        host: host?.uid,
+        host: host.uid,
+        hostNickName: host.nickName,
         created: firebase.firestore.Timestamp.now().seconds,
       })
       .then(() => {

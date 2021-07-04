@@ -132,6 +132,21 @@ const ChatList = () => {
     }
   }, [newParticipants, pSnapShotType]);
 
+  const handleRemoveRoom = (id) => {
+    const removeAtChatRooms = async () => {
+      await db.collection("chatRooms").doc(id).delete();
+    };
+    const getChatRoomParticipants = async () => {
+      const chatRoomsRef = await db
+        .collection("chatRooms")
+        .doc(id)
+        .collection("participants");
+      const snapshot = await chatRoomsRef.get();
+      const data = snapshot.docs.map((doc) => ({ ...doc.data() }));
+      return data;
+    };
+    getChatRoomParticipants().then((r) => console.log(r));
+  };
   return (
     <Container>
       <Header />
@@ -146,8 +161,15 @@ const ChatList = () => {
           />
         </HeaderWrapper>
         {openModal ? <CreateRoomModal toggleModal={toggleModal} /> : ""}
-        {active === "all" && <AllChatRooms handleJoin={handleJoin} />}
-        {active === "myChatRoom" && <MyChatRooms />}
+        {active === "all" && (
+          <AllChatRooms
+            handleJoin={handleJoin}
+            handleRemoveRoom={handleRemoveRoom}
+          />
+        )}
+        {active === "myChatRoom" && (
+          <MyChatRooms handleRemoveRoom={handleRemoveRoom} />
+        )}
       </ChatListContainer>
     </Container>
   );

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useSelector } from "react-redux";
 import ChatRoomItem from "./ChatRoomItem";
 
-const AllChatRooms = ({ handleJoin }) => {
+const AllChatRooms = ({ handleJoin, handleRemoveRoom }) => {
   const chatRooms = useSelector((state) => state.chat.allChatRooms);
 
   return (
@@ -21,6 +21,7 @@ const AllChatRooms = ({ handleJoin }) => {
             index={index}
             key={index}
             handleJoin={handleJoin}
+            handleRemoveRoom={handleRemoveRoom}
           />
         ))}
     </Container>

@@ -3,7 +3,15 @@ import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-const ChatRoomItem = ({ title, description, index, id, host, handleJoin }) => {
+const ChatRoomItem = ({
+  title,
+  description,
+  index,
+  id,
+  host,
+  handleJoin,
+  handleRemoveRoom,
+}) => {
   const history = useHistory();
   const typeList = useSelector((state) => state.user.authType);
   const user = useSelector((state) => state.user.userProfile);
@@ -49,7 +57,11 @@ const ChatRoomItem = ({ title, description, index, id, host, handleJoin }) => {
         <Title onClick={enterChatRoom}>{title}</Title>
         <Description>{description}</Description>
       </ContentWrapper>
-      {value === "admin" && <Button color="#d5503d">삭제</Button>}
+      {value === "admin" && (
+        <Button color="#d5503d" onClick={() => handleRemoveRoom(id)}>
+          삭제
+        </Button>
+      )}
       {value === "initial" && (
         <Button color="#a0bbaa" onClick={() => handleJoin(id)}>
           가입

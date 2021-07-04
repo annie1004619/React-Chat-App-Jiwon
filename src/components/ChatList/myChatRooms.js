@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useSelector } from "react-redux";
 import ChatRoomItem from "./ChatRoomItem";
 
-const MyChatRooms = () => {
+const MyChatRooms = ({ handleRemoveRoom }) => {
   const [myRooms, setMyRooms] = useState([]);
   const user = useSelector((state) => state.user.userProfile);
   const allChatRooms = useSelector((state) => state.chat.allChatRooms);
@@ -35,6 +35,7 @@ const MyChatRooms = () => {
           host={chatRoom.host}
           index={index}
           key={index}
+          handleRemoveRoom={handleRemoveRoom}
         />
       ))}
     </Container>

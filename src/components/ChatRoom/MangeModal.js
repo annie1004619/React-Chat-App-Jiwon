@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 
 const MangeModal = ({ toggleModal, handleAccept, handleReject }) => {
   const participants = useSelector((state) => state.chat.participants);
+  const host = useSelector((state) => state.chat.currentChatRoom.hostNickName);
   const [waiting, setWaiting] = useState([]);
   const [accept, setAccept] = useState([]);
 
@@ -39,6 +40,13 @@ const MangeModal = ({ toggleModal, handleAccept, handleReject }) => {
           </ListItem>
         ))}
         <SubTitle>참여자 목록</SubTitle>
+        {host && (
+          <ListItem>
+            <MdPlayArrow size={25} style={{ marginRight: "2vw" }} />
+            <NickName>{host}</NickName>
+            <Host color="#e34f33">방장</Host>
+          </ListItem>
+        )}
         {accept.length === 0 && <Message>참여자가 없습니다.</Message>}
         {accept.map((list, index) => (
           <ListItem key={index}>
@@ -102,6 +110,19 @@ const Button = styled.button`
   border-radius: 50px;
   margin-left: 10px;
   width: 60px;
+`;
+const Host = styled.div`
+  height: 30px;
+  background-color: #0f530d;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 50px;
+  margin-left: 10px;
+  width: 60px;
+  text-align: center;
+  line-height: 30px;
+  color: white;
 `;
 
 const ListItem = styled.div`

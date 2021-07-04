@@ -4,11 +4,15 @@ import Header from "../components/Header";
 import { db, firebase } from "../firebase";
 import {
   addMessage,
+  addParticipants,
   loadIdChatRoom,
   loadMessages,
   modifyMessage,
   removeMessage,
+  removeParticipants,
+  setParticipants,
   unLoad,
+  updateParticipants,
 } from "../reducers/chat";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -24,11 +28,15 @@ const ChatRoom = () => {
 
   const messages = useSelector((state) => state.chat.messages);
   const user = useSelector((state) => state.user.userProfile);
+  const participants = useSelector((state) => state.chat.participants);
 
   const [submitFlag, setSubmitFlag] = useState(false);
   const [newCandidate, setNewCandidate] = useState(null);
   const [snapShotType, setSnapShotType] = useState("");
   const [text, onChangeText, setText] = useInput("");
+
+  const [newParticipants, setNewParticipants] = useState(null);
+  const [pSnapShotType, setpSnapShotType] = useState("");
 
   const getChatRoomData = async () => {
     const chatRef = await db.collection("chatRooms").doc(roomId);
@@ -45,12 +53,25 @@ const ChatRoom = () => {
     return snapshot.docs.map((doc) => ({ ...doc.data() }));
   };
 
+  const getChatRoomMember = async () => {
+    const memberRef = await db
+      .collection("chatRooms")
+      .doc(roomId)
+      .collection("participants");
+
+    const snapshot = await memberRef.get();
+    return snapshot.docs.map((doc) => ({ ...doc.data() }));
+  };
+
   // 처음에 해당 룸의 정보와 메세지들을 가져온다.
   useEffect(() => {
-    getChatRoomData().then((r) => {
-      dispatch(loadIdChatRoom(r));
-    });
-    getMessages().then((r) => dispatch(loadMessages(r)));
+    Promise.all([getChatRoomData(), getMessages(), getChatRoomMember()]).then(
+      (r) => {
+        dispatch(loadIdChatRoom(r[0]));
+        dispatch(loadMessages(r[1]));
+        dispatch(setParticipants(r[2]));
+      }
+    );
   }, [dispatch]);
 
   //서버에서 처리하기 전에 요청 방지
@@ -65,12 +86,18 @@ const ChatRoom = () => {
 
   const onSubmitMessage = async () => {
     if (doubleSubmitCheck()) return;
+    if (!text) {
+      alert("채팅을 입력해주세요.");
+      return;
+    }
+
     const payload = {
       uidOfUser: user.uid,
       nickName: user.nickName,
       content: text,
       uid: v4(),
       created: firebase.firestore.Timestamp.now().seconds,
+      emoji: { 1: [], 2: [] },
     };
 
     await db
@@ -85,6 +112,11 @@ const ChatRoom = () => {
       });
   };
   const onUpdateMessage = async (id, newContent) => {
+    if (!newContent) {
+      alert("수정하실 채팅을 입력해주세요.");
+      return;
+    }
+
     const messageRef = db
       .collection("chatRooms")
       .doc(roomId)
@@ -107,6 +139,7 @@ const ChatRoom = () => {
     await messageRef.delete();
   };
 
+  //메세지
   useEffect(() => {
     const chatRef = db
       .collection("chatRooms")
@@ -138,10 +171,11 @@ const ChatRoom = () => {
 
   useEffect(() => {
     if (!newCandidate) return;
+    if (!messages) return;
     const index = messages.findIndex(
       (message) => message.uid === newCandidate.uid
     );
-    if (index === -1) {
+    if (index === -1 && snapShotType === "added") {
       dispatch(addMessage(newCandidate));
       return;
     }
@@ -153,11 +187,140 @@ const ChatRoom = () => {
     }
   }, [newCandidate, snapShotType]);
 
+  //참가자
+  useEffect(() => {
+    const participantsRef = db
+      .collection("chatRooms")
+      .doc(roomId)
+      .collection("participants");
+    participantsRef.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const newEntry = change.doc.data();
+          setNewParticipants(newEntry);
+          setpSnapShotType("added");
+        }
+        if (change.type === "modified") {
+          const newEntry = change.doc.data();
+          newEntry.uid = change.doc.id;
+          setNewParticipants(newEntry);
+          setpSnapShotType("modified");
+        }
+        if (change.type === "removed") {
+          const newEntry = change.doc.data();
+          setNewParticipants(newEntry);
+          setpSnapShotType("removed");
+        }
+        setNewParticipants(null);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!newParticipants) return;
+    if (!participants) return;
+
+    const index = participants.findIndex((p) => p.uid === newParticipants.uid);
+    if (index === -1 && pSnapShotType === "added") {
+      dispatch(addParticipants(newParticipants));
+      return;
+    }
+    if (pSnapShotType === "modified") {
+      dispatch(updateParticipants(newParticipants.uid, newParticipants));
+    }
+    if (pSnapShotType === "removed") {
+      dispatch(removeParticipants(newParticipants));
+    }
+  }, [newParticipants, pSnapShotType]);
+
+  const handleAccept = (user) => {
+    const answer = window.confirm(`${user.nickName}을 승인하시겠습니까?`);
+    if (!answer) return;
+
+    const changeChatRoomParticipants = async () => {
+      await db
+        .collection("chatRooms")
+        .doc(roomId)
+        .collection("participants")
+        .doc(user.uid)
+        .update({ nickName: user.nickName, uid: user.uid, type: "accept" });
+    };
+    const changeUsersParticipants = async () => {
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("participants")
+        .doc(roomId)
+        .update({ cid: roomId, type: "accept" });
+    };
+
+    Promise.all([
+      changeChatRoomParticipants(),
+      changeUsersParticipants(),
+    ]).then((r) => console.log(r));
+  };
+
+  const handleReject = (user, word) => {
+    const answer = window.confirm(`${user.nickName}을 ${word}하시겠습니까?`);
+    if (!answer) return;
+
+    const deleteChatRoomParticipants = async () => {
+      await db
+        .collection("chatRooms")
+        .doc(roomId)
+        .collection("participants")
+        .doc(user.uid)
+        .delete();
+    };
+    const deleteUsersParticipants = async () => {
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("participants")
+        .doc(roomId)
+        .delete();
+    };
+
+    Promise.all([
+      deleteChatRoomParticipants(),
+      deleteUsersParticipants(),
+    ]).then((r) => console.log(r));
+  };
+
+  const onClickEmoji = async (emojiKey, messageId) => {
+    const messageRef = db
+      .collection("chatRooms")
+      .doc(roomId)
+      .collection("messages")
+      .doc(messageId);
+    const doc = await messageRef.get();
+
+    const data = doc.data();
+    const emojiObj = { ...data.emoji };
+
+    const list = emojiObj[emojiKey];
+    let newList = [];
+    if (list && list.includes(user.uid)) {
+      newList = list.filter((item) => item !== user.uid);
+    }
+    if (list && !list.includes(user.uid)) {
+      newList = list.concat(user.uid);
+    }
+    emojiObj[emojiKey] = newList;
+
+    await messageRef.update({
+      emoji: emojiObj,
+    });
+  };
+
   return (
     <Container>
       <Header />
       <ChatRoomContainer>
-        <ChatRoomHeader />
+        <ChatRoomHeader
+          handleAccept={handleAccept}
+          handleReject={handleReject}
+        />
         <MessageListWrapper>
           {messages &&
             messages.map((message, index) => (
@@ -169,6 +332,9 @@ const ChatRoom = () => {
                 id={message.uid}
                 onUpdateMessage={onUpdateMessage}
                 onRemoveMessage={onRemoveMessage}
+                emojiObj={message.emoji}
+                onClickEmoji={onClickEmoji}
+                created={message.created}
               />
             ))}
         </MessageListWrapper>
@@ -194,6 +360,9 @@ const ChatRoomContainer = styled.div`
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
   border-radius: 50px;
   padding: 5vh 3vw;
+  @media (max-width: 400px) {
+    width: 90%;
+  }
 `;
 const MessageListWrapper = styled.div`
   height: 80%;

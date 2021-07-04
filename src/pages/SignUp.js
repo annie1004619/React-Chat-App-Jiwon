@@ -180,7 +180,7 @@ const Container = styled.div`
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
   background: #f7f6ee;
   border-radius: 50px;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 70%;
   }
 `;

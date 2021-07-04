@@ -125,7 +125,7 @@ border-radius: 10px;
 }
   margin: 5vh 5vw;
   width: 80%;
-  height: 16vh;
+  height: 120px;
 :after {
 content: '';
 position: absolute;
@@ -142,14 +142,14 @@ margin-right: -20px;
 }
  @media (max-width: 800px) {
     width: 80%;
-    height: 21vh;
+    height: 160px;
   }
 `;
 const Balloon = styled.div`
   position: relative;
   margin: 5vh 5vw;
   width: 80%;
-  height: 16vh;
+  height: 120px;
   background: #f3efe6;
   border-radius: 10px;
   :after {
@@ -168,7 +168,7 @@ const Balloon = styled.div`
   }
   @media (max-width: 800px) {
     width: 80%;
-    height: 21vh;
+    height: 160px;
   }
 `;
 const TopWrapper = styled.div`

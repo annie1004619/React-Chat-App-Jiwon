@@ -92,7 +92,7 @@ const Container = styled.div`
   box-shadow: 0px 1px 1px rgba(15, 15, 15, 0.2);
   padding: 0 20px;
   border-radius: 5px;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 70%;
   }
 `;

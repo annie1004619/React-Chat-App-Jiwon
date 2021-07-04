@@ -76,7 +76,7 @@ const Container = styled.div`
   padding: 0 20px;
   border-radius: 5px;
   overflow-y: scroll;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 70%;
   }
 `;

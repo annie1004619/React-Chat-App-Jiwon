@@ -62,7 +62,7 @@ const Container = styled.div`
   align-items: center;
   height: 80px;
   line-height: 80px;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 100%;
   }
 `;

@@ -50,11 +50,12 @@ const ChatList = () => {
 
   useEffect(() => {
     if (!user) return;
+
     Promise.all([getAllChatRooms(), getMyChatRoom()]).then((r) => {
       dispatch(loadAllChatRooms(r[0]));
       dispatch(setAuthType(r[1]));
     });
-  }, [user]);
+  }, [user, dispatch]);
 
   const setChatRoomsWaiting = async (id) => {
     if (!user) return;
@@ -164,7 +165,7 @@ const ChatListContainer = styled.div`
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
   border-radius: 50px;
   padding: 5vh 3vw;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 90%;
   }
 `;

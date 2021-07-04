@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { firebaseApp } from "../firebase";
 import { MdAccountCircle } from "react-icons/md";
 import { userLogOut } from "../reducers";
+import { RiChatSmile3Line } from "react-icons/ri";
 
 const Header = () => {
   const history = useHistory();
@@ -33,7 +34,10 @@ const Header = () => {
   };
   return (
     <Container>
-      <Logo onClick={clickLogo}>WebTalk</Logo>
+      <Logo onClick={clickLogo}>
+        <div>WebTalk</div>
+        <RiChatSmile3Line />
+      </Logo>
       {userProfile ? (
         <div style={{ display: "flex", alignItems: "center" }}>
           <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
@@ -68,10 +72,12 @@ const Container = styled.div`
 `;
 const Logo = styled.div`
   margin-left: 30px;
-  font-size: 1.8rem;
-  font-weight: bold;
   color: #0f530d;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
 `;
 const Button = styled.button`
   cursor: pointer;

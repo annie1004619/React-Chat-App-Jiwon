@@ -99,7 +99,7 @@ const Waiting = styled.div`
   border: 1px solid #c4c4c4;
   font-size: 1rem;
   padding: 1vh 0;
-  width: 10%;
+  width: 50px;
   color: white;
   border-radius: 5px;
   text-align: center;

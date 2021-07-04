@@ -101,7 +101,7 @@ const Button = styled.button`
   font-weight: bold;
   border-radius: 50px;
   margin-left: 10px;
-  width: 50px;
+  width: 60px;
 `;
 
 const ListItem = styled.div`

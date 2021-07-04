@@ -43,7 +43,7 @@ const EmojiWrapper = styled.div`
     active &&
     `
     opacity: 0.9;
-    border: 2px solid #0f530d;
+    border: 2px solid #537755;
 `}
 `;
 export default Emoji;

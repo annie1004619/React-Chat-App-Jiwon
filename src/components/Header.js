@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { firebaseApp } from "../firebase";
-import { setUserProfile } from "../reducers/user";
 import { MdAccountCircle } from "react-icons/md";
+import { userLogOut } from "../reducers";
 
 const Header = () => {
   const history = useHistory();
@@ -15,9 +15,9 @@ const Header = () => {
       .auth()
       .signOut()
       .then(() => {
-        dispatch(setUserProfile(null));
+        dispatch(userLogOut());
         alert("로그아웃되었습니다.");
-        history.push("/");
+        history.push("/users/login");
       })
       .catch((error) => {
         alert(error);
@@ -28,12 +28,12 @@ const Header = () => {
       history.push("/chat/list");
     }
     if (!userProfile) {
-      history.push("/");
+      history.push("/users/login");
     }
   };
   return (
     <Container>
-      <Logo onClick={clickLogo}>ChatApp</Logo>
+      <Logo onClick={clickLogo}>WebTalk</Logo>
       {userProfile ? (
         <div style={{ display: "flex", alignItems: "center" }}>
           <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
@@ -62,6 +62,9 @@ const Container = styled.div`
   align-items: center;
   height: 80px;
   line-height: 80px;
+  @media (max-width: 400px) {
+    width: 100%;
+  }
 `;
 const Logo = styled.div`
   margin-left: 30px;

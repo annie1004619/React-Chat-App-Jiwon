@@ -72,6 +72,9 @@ const ChatRoom = () => {
         dispatch(setParticipants(r[2]));
       }
     );
+    return () => {
+      dispatch(unLoad());
+    };
   }, [dispatch]);
 
   //서버에서 처리하기 전에 요청 방지
@@ -360,7 +363,7 @@ const ChatRoomContainer = styled.div`
   box-shadow: 0px 6px 15px 6px rgba(200, 200, 200, 0.8);
   border-radius: 50px;
   padding: 5vh 3vw;
-  @media (max-width: 400px) {
+  @media (max-width: 800px) {
     width: 90%;
   }
 `;

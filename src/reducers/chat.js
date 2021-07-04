@@ -146,6 +146,7 @@ const chat = (state = initialState, action) => {
         ...state,
         currentChatRoom: null,
         messages: null,
+        participants: [],
       };
     default:
       return state;

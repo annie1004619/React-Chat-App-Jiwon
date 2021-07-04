@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { MdAccountCircle } from "react-icons/md";
 import useInput from "../../hooks/useInput";
+import Emoji from "./Emoji";
+import moment from "moment";
 
 const MessageItem = ({
   content,
@@ -11,10 +13,15 @@ const MessageItem = ({
   id,
   onUpdateMessage,
   onRemoveMessage,
+  emojiObj,
+  onClickEmoji,
+  created,
 }) => {
   const [updateMode, setUpdateMode] = useState(false);
   const [newContent, onChangeNewContent, setNewContent] = useInput(content);
   const user = useSelector((state) => state.user.userProfile);
+  const date = moment(created * 1000).format("YYYY-MM-DD h:mm a");
+
   const onChangeUpdateMode = () => {
     setUpdateMode(!updateMode);
     setNewContent(content);
@@ -23,24 +30,25 @@ const MessageItem = ({
   const onClickComplete = () => {
     onUpdateMessage(id, newContent)
       .then(() => setUpdateMode(false))
-      .catch((error) => console.log(error));
+      .catch((error) => alert(error));
   };
 
   const onClickRemove = () => {
     setUpdateMode(false);
     onRemoveMessage(id)
       .then(() => setUpdateMode(false))
-      .catch((error) => console.log(error));
+      .catch((error) => alert(error));
   };
 
   if (user && user.uid === writerId) {
     return (
       <MyBalloon>
         <TopWrapper>
-          <Wrapper>
+          <UserWrapper>
             <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
-            {writer}
-          </Wrapper>
+            <Writer>{writer}</Writer>
+            <Date>{date}</Date>
+          </UserWrapper>
           {updateMode ? (
             <Wrapper>
               <Button onClick={onClickComplete}>완료</Button>
@@ -63,17 +71,49 @@ const MessageItem = ({
         ) : (
           <Content>{content}</Content>
         )}
+        <EmojiWrapper>
+          <Emoji
+            value={"💚"}
+            emojiObj={emojiObj[1]}
+            emojiKey="1"
+            onClickEmoji={onClickEmoji}
+            id={id}
+          />
+          <Emoji
+            value={"🎉"}
+            emojiObj={emojiObj[2]}
+            emojiKey="2"
+            onClickEmoji={onClickEmoji}
+            id={id}
+          />
+        </EmojiWrapper>
       </MyBalloon>
     );
   }
-
   return (
     <Balloon>
-      <Wrapper>
+      <UserWrapper>
         <MdAccountCircle size={30} style={{ marginRight: "5px" }} />
-        {writer}
-      </Wrapper>
+        <Writer>{writer}</Writer>
+        <Date>{date}</Date>
+      </UserWrapper>
       <Content>{content}</Content>
+      <EmojiWrapper>
+        <Emoji
+          value={"💚"}
+          emojiObj={emojiObj[1]}
+          emojiKey="1"
+          onClickEmoji={onClickEmoji}
+          id={id}
+        />
+        <Emoji
+          value={"🎉"}
+          emojiObj={emojiObj[2]}
+          emojiKey="2"
+          onClickEmoji={onClickEmoji}
+          id={id}
+        />
+      </EmojiWrapper>
     </Balloon>
   );
 };
@@ -85,7 +125,7 @@ border-radius: 10px;
 }
   margin: 5vh 5vw;
   width: 80%;
-    height: 14vh;
+  height: 16vh;
 :after {
 content: '';
 position: absolute;
@@ -100,12 +140,16 @@ border-bottom: 0;
 margin-top: -10px;
 margin-right: -20px;
 }
+ @media (max-width: 800px) {
+    width: 80%;
+    height: 21vh;
+  }
 `;
 const Balloon = styled.div`
   position: relative;
   margin: 5vh 5vw;
   width: 80%;
-  height: 14vh;
+  height: 16vh;
   background: #f3efe6;
   border-radius: 10px;
   :after {
@@ -122,6 +166,10 @@ const Balloon = styled.div`
     margin-top: -10px;
     margin-left: -20px;
   }
+  @media (max-width: 800px) {
+    width: 80%;
+    height: 21vh;
+  }
 `;
 const TopWrapper = styled.div`
   align-items: center;
@@ -129,12 +177,32 @@ const TopWrapper = styled.div`
   justify-content: space-between;
   width: 95%;
 `;
-
+const UserWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  padding-top: 1vh;
+  margin-left: 1vw;
+  @media (max-width: 800px) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
 const Wrapper = styled.div`
   align-items: center;
   display: flex;
   padding-top: 1vh;
   margin-left: 1vw;
+`;
+const Writer = styled.div`
+  font-weight: bold;
+`;
+const Date = styled.div`
+  margin-left: 2vw;
+  color: gray;
+  @media (max-width: 800px) {
+    margin-left: 0vw;
+  }
 `;
 const Content = styled.div`
   margin-top: 2vh;
@@ -155,5 +223,10 @@ const Input = styled.input`
   height: 5vh;
   border-radius: 5px;
   border: 1px solid #838383;
+`;
+const EmojiWrapper = styled.div`
+  display: flex;
+  margin: 1vh 1vw 0 auto;
+  width: 130px;
 `;
 export default MessageItem;

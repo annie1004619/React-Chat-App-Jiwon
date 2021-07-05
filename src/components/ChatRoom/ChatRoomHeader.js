@@ -5,9 +5,8 @@ import { useSelector } from "react-redux";
 import { MdAssignment, MdExitToApp } from "react-icons/md";
 import MangeModal from "./MangeModal";
 
-const ChatRoomHeader = ({ handleAccept, handleReject }) => {
+const ChatRoomHeader = ({ handleAccept, handleReject, unSubscribeRoom }) => {
   const participants = useSelector((state) => state.chat.participants);
-  const host = useSelector((state) => state.chat.currentChatRoom?.hostNickName);
   const user = useSelector((state) => state.user.userProfile);
   const currentChatRoom = useSelector((state) => state.chat.currentChatRoom);
 
@@ -49,39 +48,40 @@ const ChatRoomHeader = ({ handleAccept, handleReject }) => {
     <HeaderWrapper>
       <Title>{currentChatRoom && currentChatRoom.title}</Title>
 
-      <ParticipantsWrapper>
-        <MdGroup size={30} color="#838383" style={{ marginRight: "1vw" }} />
+      <FlexWrapper>
+        <MdGroup size={30} color="#838383" style={{ marginRight: "0.5vw" }} />
         <div>{acceptNumber + 1}명</div>
-        {admin ? (
-          <MenuIconWrapper>
-            <MdAssignment
-              size={30}
-              color="#838383"
-              style={{ marginLeft: "1vw", cursor: "pointer" }}
-              onClick={toggleModal}
-            />
-            {waiting.length !== 0 && (
-              <WaitingNumber>{waiting.length}</WaitingNumber>
-            )}
-          </MenuIconWrapper>
-        ) : (
+        <MenuIconWrapper>
+          <MdAssignment
+            size={30}
+            color="#838383"
+            style={{ marginLeft: "1vw", cursor: "pointer" }}
+            onClick={toggleModal}
+          />
+          {admin && waiting.length !== 0 && (
+            <WaitingNumber>{waiting.length}</WaitingNumber>
+          )}
+        </MenuIconWrapper>
+        {currentChatRoom && (
           <MdExitToApp
             size={30}
             color="#838383"
             style={{ marginLeft: "1vw", cursor: "pointer" }}
+            onClick={() => unSubscribeRoom(admin)}
           />
         )}
-        {openModal && host && (
+        {openModal && currentChatRoom && (
           <MangeModal
             toggleModal={toggleModal}
             handleAccept={handleAccept}
             handleReject={handleReject}
-            host={host}
+            host={currentChatRoom.hostNickName}
             waiting={waiting}
             accept={accept}
+            admin={admin}
           />
         )}
-      </ParticipantsWrapper>
+      </FlexWrapper>
     </HeaderWrapper>
   );
 };
@@ -94,7 +94,7 @@ const HeaderWrapper = styled.div`
   color: #838383;
   font-size: 1.2rem;
 `;
-const ParticipantsWrapper = styled.div`
+const FlexWrapper = styled.div`
   display: flex;
   align-items: center;
 `;
@@ -106,6 +106,7 @@ const Title = styled.div`
 
 const MenuIconWrapper = styled.div`
   position: relative;
+  display: flex;
 `;
 const WaitingNumber = styled.div`
   position: absolute;

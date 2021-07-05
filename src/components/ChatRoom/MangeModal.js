@@ -9,6 +9,7 @@ const MangeModal = ({
   host,
   waiting,
   accept,
+  admin,
 }) => {
   return (
     <Dimmer>
@@ -22,21 +23,28 @@ const MangeModal = ({
         >
           <MdClose size={25} color="black" onClick={toggleModal} />
         </div>
-        <Title>참가자 관리하기</Title>
-        <SubTitle>대기자 목록</SubTitle>
-        {waiting.length === 0 && <Message>대기자가 없습니다.</Message>}
-        {waiting.map((list, index) => (
-          <ListItem key={index}>
-            <MdPlayArrow size={25} style={{ marginRight: "2vw" }} />
-            <NickName>{list.nickName}</NickName>
-            <Button color="#c7cfac" onClick={() => handleAccept(list)}>
-              승인
-            </Button>
-            <Button color="#c4c4c4" onClick={() => handleReject(list, "거절")}>
-              거절
-            </Button>
-          </ListItem>
-        ))}
+        {admin ? <Title>참가자 관리하기</Title> : <Title>참가자 보기</Title>}
+        {admin && (
+          <div>
+            <SubTitle>대기자 목록</SubTitle>
+            {waiting.length === 0 && <Message>대기자가 없습니다.</Message>}
+            {waiting.map((list, index) => (
+              <ListItem key={index}>
+                <MdPlayArrow size={25} style={{ marginRight: "2vw" }} />
+                <NickName>{list.nickName}</NickName>
+                <Button color="#c7cfac" onClick={() => handleAccept(list)}>
+                  승인
+                </Button>
+                <Button
+                  color="#c4c4c4"
+                  onClick={() => handleReject(list, "거절")}
+                >
+                  거절
+                </Button>
+              </ListItem>
+            ))}
+          </div>
+        )}
         <SubTitle>참여자 목록</SubTitle>
         {host && (
           <ListItem>
@@ -50,13 +58,15 @@ const MangeModal = ({
           <ListItem key={index}>
             <MdPlayArrow size={25} style={{ marginRight: "2vw" }} />
             <NickName>{list.nickName}</NickName>
-            <Button
-              color="#e34f33"
-              text="white"
-              onClick={() => handleReject(list, "강퇴")}
-            >
-              강퇴
-            </Button>
+            {admin && (
+              <Button
+                color="#e34f33"
+                text="white"
+                onClick={() => handleReject(list, "강퇴")}
+              >
+                강퇴
+              </Button>
+            )}
           </ListItem>
         ))}
       </Container>

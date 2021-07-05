@@ -15,7 +15,7 @@ import {
   updateParticipants,
 } from "../reducers/chat";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import useInput from "../hooks/useInput";
 import v4 from "uuid/dist/esm-browser/v4";
 import ChatRoomHeader from "../components/ChatRoom/ChatRoomHeader";
@@ -23,6 +23,7 @@ import MessageItem from "../components/ChatRoom/MessageItem";
 import MessageInput from "../components/ChatRoom/MessageInput";
 
 const ChatRoom = () => {
+  const history = useHistory();
   const dispatch = useDispatch();
   const { roomId } = useParams();
 
@@ -260,7 +261,7 @@ const ChatRoom = () => {
     Promise.all([
       changeChatRoomParticipants(),
       changeUsersParticipants(),
-    ]).then((r) => console.log(r));
+    ]).then(() => {});
   };
 
   const handleReject = (user, word) => {
@@ -316,6 +317,90 @@ const ChatRoom = () => {
     });
   };
 
+  //채팅방 탈퇴하기
+  const unSubscribeRoom = (admin) => {
+    const answer = window.confirm("채팅방을 탈퇴하시겠습니까?");
+    if (!answer) return;
+
+    const unSubscribeAtChatRooms = async () => {
+      await db
+        .collection("chatRooms")
+        .doc(roomId)
+        .collection("participants")
+        .doc(user.uid)
+        .delete();
+    };
+    const unSubscribeAtUsers = async () => {
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("participants")
+        .doc(roomId)
+        .delete();
+    };
+    if (!admin) {
+      Promise.all([unSubscribeAtChatRooms(), unSubscribeAtUsers()]).then(() =>
+        history.push("/chat/list")
+      );
+      return;
+    }
+
+    const waiting = participants.filter((item) => item.type === "waiting");
+    const accept = participants.filter((item) => item.type === "accept");
+
+    if (admin && accept.length === 0 && waiting.length === 0) {
+      const removeRoom = async () => {
+        await db.collection("chatRooms").doc(roomId).delete();
+      };
+      removeRoom().then(() => history.push("/chat/list"));
+      return;
+    }
+    if (admin && accept.length === 0) {
+      waiting.forEach((item) => {
+        db.collection("users")
+          .doc(item.uid)
+          .collection("participants")
+          .doc(roomId)
+          .delete()
+          .then((r) => console.log(r));
+      });
+      history.push("chat/list");
+      return;
+    }
+
+    if (admin) {
+      const updateHost = async () => {
+        await db.collection("chatRooms").doc(roomId).update({
+          host: accept[0].uid,
+          hostNickName: accept[0].nickName,
+        });
+      };
+      const updateAtParticipants = async () => {
+        await db
+          .collection("chatRooms")
+          .doc(roomId)
+          .collection("participants")
+          .doc(accept[0].uid)
+          .delete();
+      };
+      const updateAtUsers = async () => {
+        await db
+          .collection("users")
+          .doc(accept[0].uid)
+          .collection("participants")
+          .doc(roomId)
+          .delete();
+      };
+
+      Promise.all([updateHost(), updateAtParticipants(), updateAtUsers()]).then(
+        () => {
+          history.push("/chat/list");
+        }
+      );
+      return;
+    }
+  };
+
   return (
     <Container>
       <Header />
@@ -323,6 +408,7 @@ const ChatRoom = () => {
         <ChatRoomHeader
           handleAccept={handleAccept}
           handleReject={handleReject}
+          unSubscribeRoom={unSubscribeRoom}
         />
         <MessageListWrapper>
           {messages &&
@@ -350,7 +436,6 @@ const ChatRoom = () => {
     </Container>
   );
 };
-
 const Container = styled.div`
   width: 100%;
   margin: 0 auto;

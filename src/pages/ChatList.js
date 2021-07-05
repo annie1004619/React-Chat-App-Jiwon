@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Header from "../components/Header";
 import { db } from "../firebase";
 import { useDispatch, useSelector } from "react-redux";
-import { loadAllChatRooms } from "../reducers/chat";
+import { loadAllChatRooms, removeChatRooms } from "../reducers/chat";
 import NavBar from "../components/ChatList/NavBar";
 import { MdRateReview } from "react-icons/md";
 import CreateRoomModal from "../components/ChatList/CreateRoomModal";
@@ -20,12 +20,15 @@ const ChatList = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.userProfile);
   const typeList = useSelector((state) => state.user.authType);
+  const chatRooms = useSelector((state) => state.chat.allChatRooms);
 
   const [openModal, setOpenModal] = useState(false);
   const [active, setActive] = useState("all");
 
   const [newParticipants, setNewParticipants] = useState(null);
   const [pSnapShotType, setpSnapShotType] = useState("");
+  const [newChatRooms, setNewChatRooms] = useState(null);
+  const [cSnapShotType, setcSnapShotType] = useState("");
 
   const toggleModal = () => {
     setOpenModal(!openModal);
@@ -132,20 +135,75 @@ const ChatList = () => {
     }
   }, [newParticipants, pSnapShotType]);
 
-  const handleRemoveRoom = (id) => {
+  //채팅방
+  useEffect(() => {
+    if (!user) return;
+
+    const chatRoomsRef = db.collection("chatRooms").orderBy("created");
+
+    chatRoomsRef.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const newEntry = change.doc.data();
+          setNewChatRooms(newEntry);
+          setcSnapShotType("added");
+        }
+        if (change.type === "removed") {
+          const newEntry = change.doc.data();
+          setNewChatRooms(newEntry);
+          setcSnapShotType("removed");
+        }
+        setNewChatRooms(null);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!chatRooms) return;
+    if (!newChatRooms) return;
+
+    const index = chatRooms.findIndex((room) => room.id === newChatRooms.id);
+
+    if (cSnapShotType == "added" && index === -1) {
+      return;
+    }
+    if (cSnapShotType === "removed") {
+      console.log("remove", newChatRooms);
+      dispatch(removeChatRooms(newChatRooms));
+    }
+  }, [newChatRooms, cSnapShotType]);
+
+  const handleRemoveRoom = (roomId) => {
     const removeAtChatRooms = async () => {
-      await db.collection("chatRooms").doc(id).delete();
+      await db.collection("chatRooms").doc(roomId).delete();
     };
     const getChatRoomParticipants = async () => {
       const chatRoomsRef = await db
         .collection("chatRooms")
-        .doc(id)
+        .doc(roomId)
         .collection("participants");
       const snapshot = await chatRoomsRef.get();
       const data = snapshot.docs.map((doc) => ({ ...doc.data() }));
       return data;
     };
-    getChatRoomParticipants().then((r) => console.log(r));
+    const removeAtUsers = async () => {
+      getChatRoomParticipants().then((participants) => {
+        if (participants.length === 0) {
+          return;
+        }
+        participants.forEach((item) => {
+          db.collection("users")
+            .doc(item.uid)
+            .collection("participants")
+            .doc(roomId)
+            .delete();
+        });
+      });
+    };
+
+    Promise.all([removeAtChatRooms(), removeAtUsers()]).then(() => {
+      alert("채팅방을 삭제하였습니다.");
+    });
   };
   return (
     <Container>

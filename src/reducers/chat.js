@@ -1,7 +1,7 @@
-import { act } from "@testing-library/react";
-
 export const LOAD_ALL_CHATROOMS = "LOAD_ALL_CHATROOMS";
 export const LOAD_ID_CHATROOM = "LOAD_ID_CHATROOM";
+export const UPDATE_CHATROOMS = "UPDATE_CHATROOMS";
+export const REMOVE_CHATROOMS = "REMOVE_CHATROOMS";
 
 export const LOAD_MESSAGES = "LOAD_MESSAGES";
 export const ADD_MESSAGE = "ADD_MESSAGE";
@@ -19,12 +19,18 @@ export const loadAllChatRooms = (chatRooms) => ({
   type: LOAD_ALL_CHATROOMS,
   payload: chatRooms,
 });
-
 export const loadIdChatRoom = (chatRoom) => ({
   type: LOAD_ID_CHATROOM,
   payload: chatRoom,
 });
-
+export const updateChatRooms = (chatRoom) => ({
+  type: UPDATE_CHATROOMS,
+  payload: chatRoom,
+});
+export const removeChatRooms = (chatRoom) => ({
+  type: REMOVE_CHATROOMS,
+  payload: chatRoom,
+});
 export const loadMessages = (messages) => ({
   type: LOAD_MESSAGES,
   payload: messages,
@@ -83,7 +89,23 @@ const chat = (state = initialState, action) => {
         ...state,
         currentChatRoom: action.payload,
       };
-
+    case UPDATE_CHATROOMS:
+      return {
+        ...state,
+        allChatRooms: state.allChatRooms.map((chatRoom) => {
+          if (chatRoom.id === action.payload.id) {
+            return action.payload;
+          }
+          return chatRoom;
+        }),
+      };
+    case REMOVE_CHATROOMS:
+      return {
+        ...state,
+        allChatRooms: state.allChatRooms.filter(
+          (chatRoom) => chatRoom.id !== action.payload.id
+        ),
+      };
     case LOAD_MESSAGES:
       return {
         ...state,

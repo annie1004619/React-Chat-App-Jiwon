@@ -81,7 +81,7 @@ const ChatList = () => {
   };
 
   const handleJoin = async (id) => {
-    Promise.all([setChatRoomsWaiting(id), setUserWaiting(id)]).then((r) => {
+    Promise.all([setChatRoomsWaiting(id), setUserWaiting(id)]).then(() => {
       alert("가입을 신청하였습니다");
     });
   };
@@ -115,7 +115,7 @@ const ChatList = () => {
         setNewParticipants(null);
       });
     });
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!newParticipants) return;
@@ -123,7 +123,7 @@ const ChatList = () => {
 
     const index = typeList.findIndex((p) => p.cid === newParticipants.cid);
 
-    if (pSnapShotType == "added" && index === -1) {
+    if (pSnapShotType === "added" && index === -1) {
       dispatch(setAuthWaiting({ cid: newParticipants.cid, type: "waiting" }));
       return;
     }
@@ -164,11 +164,10 @@ const ChatList = () => {
 
     const index = chatRooms.findIndex((room) => room.id === newChatRooms.id);
 
-    if (cSnapShotType == "added" && index === -1) {
+    if (cSnapShotType === "added" && index === -1) {
       return;
     }
     if (cSnapShotType === "removed") {
-      console.log("remove", newChatRooms);
       dispatch(removeChatRooms(newChatRooms));
     }
   }, [newChatRooms, cSnapShotType]);
